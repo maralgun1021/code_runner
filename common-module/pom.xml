@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>common-module</artifactId>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
