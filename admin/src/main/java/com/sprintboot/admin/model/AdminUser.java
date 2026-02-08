@@ -18,9 +18,9 @@ import jakarta.persistence.Table;
 @Table(name = "admin_user")
 public class AdminUser {
 
-    @Id 
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    
+
     private Long id;
     private String name;
     private String phone;
@@ -32,5 +32,4 @@ public class AdminUser {
     @JsonManagedReference
     private List<AdminExamResult> results;
 
-    
 }

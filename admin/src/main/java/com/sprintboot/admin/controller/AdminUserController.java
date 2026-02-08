@@ -14,11 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sprintboot.admin.dto.AdminUserDTO;
 import com.sprintboot.admin.model.AdminUser;
 import com.sprintboot.admin.repository.AdminUserRepo;
 
 @RestController
-@RequestMapping("/users") 
+@RequestMapping("/users")
 public class AdminUserController {
 
     @Autowired
@@ -39,15 +40,22 @@ public class AdminUserController {
 
     // CREATE user
     @PostMapping
-    public AdminUser create(@RequestBody AdminUser exam) {
-        return repo.save(exam);
+    public AdminUser create(@RequestBody AdminUserDTO dto) {
+        AdminUser user = new AdminUser();
+        user.setName(dto.getName());
+        user.setPhone(dto.getPhone());
+        user.setAge(dto.getAge());
+        user.setEmail(dto.getEmail());
+        user.setRole(dto.getRole());
+        return repo.save(user);
     }
 
     // UPDATE user
+    @SuppressWarnings("null")
     @PutMapping("/{id}")
     public ResponseEntity<AdminUser> update(
             @PathVariable Long id,
-            @RequestBody AdminUser updatedUser) {
+            @RequestBody AdminUserDTO updatedUser) {
 
         return repo.findById(id)
                 .map(user -> {
@@ -73,5 +81,4 @@ public class AdminUserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    
 }

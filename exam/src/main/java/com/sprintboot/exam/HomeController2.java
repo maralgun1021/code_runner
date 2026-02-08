@@ -1,11 +1,12 @@
-package com.sprintboot.admin;
+package com.sprintboot.exam;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-public class HomeController {
+@RestController
+public class HomeController2 {
 
     @Value("${spring.application.name}")
     private String test;

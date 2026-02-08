@@ -24,7 +24,9 @@ public class AdminProblem {
 
     private String name;
 
-    private String text;
+    private String description;
+
+    private String difficulty;
     
     private String testCase;
 

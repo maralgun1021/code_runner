@@ -14,15 +14,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sprintboot.admin.dto.AdminProblemDTO;
 import com.sprintboot.admin.model.AdminProblem;
 import com.sprintboot.admin.repository.AdminProblemRepo;
 
 @RestController
-@RequestMapping("/problems") 
+@RequestMapping("/problems")
 public class AdminProblemController {
-    
+
     @Autowired
     private AdminProblemRepo repo;
+
+    private static final String TESTCASE_FOLDER = "C:/Users/maral/OneDrive/Documents/visual_program/problem_solving/";
 
     @GetMapping
     public List<AdminProblem> getAll() {
@@ -39,15 +42,21 @@ public class AdminProblemController {
 
     // CREATE problem
     @PostMapping
-    public AdminProblem create(@RequestBody AdminProblem exam) {
-        return repo.save(exam);
+    public AdminProblem create(@RequestBody AdminProblemDTO dto) {
+        AdminProblem problem = new AdminProblem();
+        problem.setName(dto.getName());
+        problem.setDescription(dto.getDescription());
+        problem.setDifficulty(dto.getDifficulty());
+        problem.setTestCase(dto.getTestCase());
+        problem.setPoint(dto.getPoint());
+        return repo.save(problem);
     }
 
     // UPDATE problem
     @PutMapping("/{id}")
     public ResponseEntity<AdminProblem> update(
             @PathVariable Long id,
-            @RequestBody AdminProblem updatedProblem) {
+            @RequestBody AdminProblemDTO updatedProblem) {
 
         return repo.findById(id)
                 .map(problem -> {
@@ -71,7 +80,5 @@ public class AdminProblemController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-
-
 
 }

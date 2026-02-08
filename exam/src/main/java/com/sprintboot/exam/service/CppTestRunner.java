@@ -4,77 +4,120 @@ import java.io.*;
 import java.util.*;
 
 public class CppTestRunner {
-    public static void main(String[] args) throws Exception {
-        String mainPath = "C:/Users/maral/OneDrive/Documents/visual_program/store/store/exam/src/main/resources/";
-        String userFile = mainPath + "submissions/user456_Solution.cpp"; // or .c for C
 
-        String outputBinary = mainPath + "submissions/user456_Solution.exe"; // Windows
-        // Linux: just "user456_Solution"
+    public static void main(String[] args) {
+        String basePath = "C:/Users/maral/OneDrive/Documents/visual_program/problem_solving/";
 
-        // 1. Compile user code
-        String compileCmd = "g++ \"" + userFile + "\" -o \"" + outputBinary + "\""; 
+        try {
+            List<String> results = runCppTests(
+                    basePath,
+                    "submissions/user456_Solution.cpp",
+                    "testcases/testcases.txt");
+
+            for (String r : results) {
+                System.out.println(r);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Compile and run C/C++ code against test cases
+     */
+    public static List<String> runCppTests(
+            String basePath,
+            String sourceFileRelativePath,
+            String testcaseRelativePath) throws Exception {
+
+        List<String> results = new ArrayList<>();
+
+        String userFile = basePath + sourceFileRelativePath;
+        String outputBinary = userFile.replace(".cpp", ".exe"); // Windows
+
+        // 1. Compile
+        String compileCmd = "g++ \"" + userFile + "\" -o \"" + outputBinary + "\"";
         Process compileProcess = Runtime.getRuntime().exec(compileCmd);
         int compileResult = compileProcess.waitFor();
 
-        // Print compilation errors if any
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(compileProcess.getErrorStream()))) {
+        // Capture compilation errors
+        StringBuilder compileErrors = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(compileProcess.getErrorStream()))) {
             String line;
             while ((line = br.readLine()) != null) {
-                System.err.println(line);
+                compileErrors.append(line).append("\n");
             }
         }
 
         if (compileResult != 0) {
-            System.out.println("Compilation failed!");
-            return;
+            results.add("Compilation failed:");
+            results.add(compileErrors.toString());
+            return results;
         }
 
-        // 2. Read testcases.txt
+        // 2. Read testcases
         List<String> lines = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(mainPath + "testcases/testcases.txt"))) {
+        try (BufferedReader br = new BufferedReader(
+                new FileReader(basePath + testcaseRelativePath))) {
+
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
+                if (line.isEmpty() || line.startsWith("#"))
+                    continue;
                 lines.add(line);
             }
         }
 
+        // 3. Run tests
         int testNum = 1;
         for (String line : lines) {
             String[] parts = line.split(";");
-            String inputStr = parts[0];       // e.g., "1,2,3"
+            String inputStr = parts[0];
             int expected = Integer.parseInt(parts[1]);
 
-            // Prepare input for the program
-            String[] inputs = inputStr.isEmpty() ? new String[0] : inputStr.split(",");
+            String[] inputs = inputStr.isEmpty()
+                    ? new String[0]
+                    : inputStr.split(",");
 
-            // 3. Run the compiled binary
             ProcessBuilder pb = new ProcessBuilder(outputBinary);
             Process runProcess = pb.start();
 
-            // Send input via stdin
-            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(runProcess.getOutputStream()))) {
+            // 🔴 FIX: SEND n FIRST, THEN ELEMENTS
+            try (BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(runProcess.getOutputStream()))) {
+
+                // send array size
+                bw.write(String.valueOf(inputs.length));
+                bw.newLine();
+
+                // send array elements
                 for (String s : inputs) {
-                    bw.write(s);
+                    bw.write(s.trim());
                     bw.newLine();
                 }
             }
 
-            // Read output from stdout
-            BufferedReader reader = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
-            String outputLine = reader.readLine(); // assume program prints one integer result
+            // Read output
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(runProcess.getInputStream()));
+            String outputLine = reader.readLine();
             runProcess.waitFor();
 
             int output = Integer.parseInt(outputLine.trim());
 
             if (output == expected) {
-                System.out.println("Test " + testNum + " Passed!");
+                results.add("Test " + testNum + " PASSED");
             } else {
-                System.out.println("Test " + testNum + " Failed! Expected " + expected + " but got " + output);
+                results.add("Test " + testNum + " FAILED (expected "
+                        + expected + ", got " + output + ")");
             }
 
             testNum++;
         }
+
+        return results;
     }
 }
